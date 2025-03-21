@@ -9,23 +9,35 @@ class ConnectionView(APIView):
 
     def post(self, request):
         print(request.data)
-        serializer = ConnectionParameterSerializer(data=request.data, many=True)
+        serializer = ConnectionParameterSerializer(data=request.data)
         if serializer.is_valid():
-            print("hello2")
-            username = request.data['username'] or None
-            port = request.data['port'] or None
-            host = request.data['host'] or None
-            password = request.data['password'] or None
+            database = request.data.get('database')
+            username = request.data.get('username')
+            port = request.data.get('port')
+            host = request.data.get('host')
+            password = request.data.get('password')
 
-            connection = psycopg2.connect(
-                user=username,
-                password=password,
-                host=host,
-                port=port
-            )
-            cursor = connection.cursor()
-            print(cursor)
-            cursor.execute("select * from categories")
+            try:
+                connection = psycopg2.connect(
+                    database=database,
+                    user=username,
+                    password=password,
+                    host=host,
+                    port=port
+                )
+            except psycopg2.Error as e:
+                print("Database Connection Error:", e)  # Log the error for debugging
+                return Response({"status": "error", "message": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+            # WRITE QUERY ON DATABASE
+            # cursor = connection.cursor()
+            # print(cursor)
+            # cursor.execute("select * from categories")
+            # cursor.execute("insert into categories (categoryname) values (%s)", ('test',))
+            # connection.commit()
+            # cursor.close()
+
+            # Just check connection was successfully or not
             if connection.status == 1:
                 return Response({'status': "success",
                                  "message": "Connected Successfully",
