@@ -16,7 +16,6 @@ class ConnectionView(APIView):
             port = request.data.get('port')
             host = request.data.get('host')
             password = request.data.get('password')
-
             try:
                 connection = psycopg2.connect(
                     database=database,
@@ -30,12 +29,12 @@ class ConnectionView(APIView):
                 return Response({"status": "error", "message": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
             # WRITE QUERY ON DATABASE
-            # cursor = connection.cursor()
-            # print(cursor)
-            # cursor.execute("select * from categories")
-            # cursor.execute("insert into categories (categoryname) values (%s)", ('test',))
-            # connection.commit()
-            # cursor.close()
+            cursor = connection.cursor()
+            cursor.execute("select * from categories")
+            for rec in cursor:
+                print(rec)
+            connection.commit()
+            cursor.close()
 
             # Just check connection was successfully or not
             if connection.status == 1:
